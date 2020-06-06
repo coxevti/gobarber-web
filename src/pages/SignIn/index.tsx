@@ -7,14 +7,15 @@ import { useAuth } from 'context/AuthContext';
 import { useToast } from 'context/ToastContext';
 import React, { useCallback, useRef } from 'react';
 import { FiLock, FiLogIn, FiMail } from 'react-icons/fi';
+import { Link, useHistory } from 'react-router-dom';
 import getValidationErrors from 'utils/getValidationErrors';
 import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
 import { ParamsFormData } from './ParamsFormData';
-import { Background, Container, Content, AnimationContainer } from './styles';
+import { AnimationContainer, Background, Container, Content } from './styles';
 
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const history = useHistory();
   const { signIn } = useAuth();
   const { addToast } = useToast();
 
@@ -30,19 +31,20 @@ const SignIn: React.FC = () => {
         });
         await schema.validate(data, { abortEarly: false });
         await signIn({ email: data.email, password: data.password });
+        history.push('/dashboard');
       } catch (error) {
         if (error instanceof Yup.ValidationError) {
           const errors = getValidationErrors(error);
           formRef.current?.setErrors(errors);
         }
         addToast({
-          type: 'info',
+          type: 'error',
           title: 'Erro de autenticação',
           description: 'Ocorreu um erro ao fazer login, cheque as credenciais',
         });
       }
     },
-    [signIn, addToast],
+    [signIn, history, addToast],
   );
 
   return (
